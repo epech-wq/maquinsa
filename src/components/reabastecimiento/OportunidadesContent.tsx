@@ -1,67 +1,109 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { DollarLineIcon, BoxIconLine, AlertIcon } from "@/icons";
+import Badge from "@/components/ui/badge/Badge";
+import Button from "@/components/ui/button/Button";
+import AnalisisCausasContent from "./AnalisisCausasContent";
+
+type Prioridad = "Alta" | "Media" | "Critica";
+
+interface CausaPrincipal {
+  tipo: string; // "Dias Inventario" o "Punto de Re-orden"
+  correlacion: number; // Percentage (e.g., 85)
+  desvio: string; // e.g., "-43%"
+  detalle: string; // e.g., "Auto servicio > Centro > Walmart"
+}
 
 interface OportunidadCard {
   id: number;
-  tipo: string;
-  potencialTotal: number;
-  color: "green" | "orange" | "red";
+  prioridad: Prioridad;
+  titulo: string;
+  valor: string; // e.g., "$250K"
+  numTiendas: number;
+  numSKUs: number;
+  porcTotal: number; // e.g., 36.3
+  causaPrincipal: CausaPrincipal;
+  color: "error" | "warning" | "success";
 }
 
 const OportunidadesContent: React.FC = () => {
+  const [selectedOportunidad, setSelectedOportunidad] = useState<OportunidadCard | null>(null);
+  const [showAnalisisCausas, setShowAnalisisCausas] = useState(false);
+
   // Mock data - replace with real data
   const oportunidades: OportunidadCard[] = [
     {
       id: 1,
-      tipo: "Venta Incremental",
-      potencialTotal: 125000,
-      color: "green",
+      prioridad: "Critica",
+      titulo: "Venta Incremental",
+      valor: "$250K",
+      numTiendas: 25,
+      numSKUs: 28,
+      porcTotal: 36.3,
+      causaPrincipal: {
+        tipo: "Dias Inventario",
+        correlacion: 85,
+        desvio: "-43%",
+        detalle: "Auto servicio > Centro > Walmart",
+      },
+      color: "error",
     },
     {
       id: 2,
-      tipo: "Riesgo de Agotados",
-      potencialTotal: 95000,
-      color: "orange",
+      prioridad: "Alta",
+      titulo: "Riesgo de Agotados",
+      valor: "$180K",
+      numTiendas: 18,
+      numSKUs: 22,
+      porcTotal: 28.5,
+      causaPrincipal: {
+        tipo: "Punto de Re-orden",
+        correlacion: 92,
+        desvio: "-50%",
+        detalle: "Bebidas > RefreshCo",
+      },
+      color: "warning",
     },
     {
       id: 3,
-      tipo: "Riesgo de Caducidad",
-      potencialTotal: 55000,
-      color: "red",
+      prioridad: "Media",
+      titulo: "Riesgo de Caducidad",
+      valor: "$95K",
+      numTiendas: 12,
+      numSKUs: 15,
+      porcTotal: 15.2,
+      causaPrincipal: {
+        tipo: "Dias Inventario",
+        correlacion: 75,
+        desvio: "150%",
+        detalle: "Conveniencia > Norte",
+      },
+      color: "success",
     },
   ];
 
-  const totalPotencial = oportunidades.reduce(
-    (sum, item) => sum + item.potencialTotal,
-    0
-  );
+  const totalPotencial = oportunidades.reduce((sum, item) => {
+    const valor = parseFloat(item.valor.replace(/[$K]/g, "")) * 1000;
+    return sum + valor;
+  }, 0);
 
-  const getCardStyles = (color: "green" | "orange" | "red") => {
-    switch (color) {
-      case "green":
-        return {
-          border: "border-success-200 dark:border-success-800",
-          bg: "bg-success-50/50 dark:bg-success-500/10",
-          text: "text-success-700 dark:text-success-400",
-          iconBg: "bg-success-100 dark:bg-success-500/20",
-        };
-      case "orange":
-        return {
-          border: "border-warning-200 dark:border-warning-800",
-          bg: "bg-warning-50/50 dark:bg-warning-500/10",
-          text: "text-warning-700 dark:text-warning-400",
-          iconBg: "bg-warning-100 dark:bg-warning-500/20",
-        };
-      case "red":
-        return {
-          border: "border-error-200 dark:border-error-800",
-          bg: "bg-error-50/50 dark:bg-error-500/10",
-          text: "text-error-700 dark:text-error-400",
-          iconBg: "bg-error-100 dark:bg-error-500/20",
-        };
+  const getPrioridadColor = (prioridad: Prioridad): "error" | "warning" | "success" => {
+    switch (prioridad) {
+      case "Critica":
+        return "error";
+      case "Alta":
+        return "warning";
+      case "Media":
+        return "success";
     }
   };
+
+  // If showing analysis view, render that instead
+  if (showAnalisisCausas) {
+    return (
+      <AnalisisCausasContent onVolver={() => setShowAnalisisCausas(false)} />
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -77,32 +119,104 @@ const OportunidadesContent: React.FC = () => {
         </div>
       </div>
 
-      {/* Big Opportunity Cards */}
+      {/* Opportunity Cards */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {oportunidades.map((oportunidad) => {
-          const styles = getCardStyles(oportunidad.color);
-          return (
-            <div
-              key={oportunidad.id}
-              className={`rounded-2xl border-2 ${styles.border} ${styles.bg} p-8`}
-            >
-              <div className="flex items-center gap-3 mb-6">
-                <div className={`flex items-center justify-center w-10 h-10 ${styles.iconBg} rounded-lg flex-shrink-0`}>
-                  <AlertIcon className={`w-5 h-5 ${styles.text}`} />
-                </div>
-                <h2 className={`text-2xl font-bold ${styles.text}`}>
-                  {oportunidad.tipo}
-                </h2>
+        {oportunidades.map((oportunidad) => (
+          <div
+            key={oportunidad.id}
+            className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03] flex flex-col"
+          >
+            {/* Header with icon and badge */}
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-center w-10 h-10 bg-gray-100 dark:bg-white/5 rounded-lg flex-shrink-0">
+                <AlertIcon />
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                Potencial total
-              </p>
-              <h3 className="text-3xl font-bold text-gray-800 dark:text-white/90">
-                ${oportunidad.potencialTotal.toLocaleString()}
-              </h3>
+              <Badge
+                variant="light"
+                color={getPrioridadColor(oportunidad.prioridad)}
+                size="sm"
+              >
+                {oportunidad.prioridad}
+              </Badge>
             </div>
-          );
-        })}
+
+            {/* Title */}
+            <h3 className="text-base font-semibold text-gray-800 dark:text-white/90">
+              {oportunidad.titulo}
+            </h3>
+
+            {/* Gap */}
+            <div className="h-6" />
+
+            {/* Info Table */}
+            <div className="space-y-3 mb-6">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Valor</span>
+                <span className="text-sm font-semibold text-gray-800 dark:text-white/90">
+                  {oportunidad.valor}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600 dark:text-gray-400"># Tiendas</span>
+                <span className="text-sm font-semibold text-gray-800 dark:text-white/90">
+                  {oportunidad.numTiendas}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600 dark:text-gray-400"># SKUs</span>
+                <span className="text-sm font-semibold text-gray-800 dark:text-white/90">
+                  {oportunidad.numSKUs}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600 dark:text-gray-400">% Total</span>
+                <span className="text-sm font-semibold text-gray-800 dark:text-white/90">
+                  {oportunidad.porcTotal}%
+                </span>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="border-t border-gray-200 dark:border-gray-800 mb-6" />
+
+            {/* Causa Principal */}
+            <div className="mb-6">
+              <h4 className="text-sm font-semibold text-gray-800 dark:text-white/90 mb-3">
+                Causa Principal:
+              </h4>
+              <div className="flex justify-between items-start mb-2">
+                <span className="text-sm text-gray-700 dark:text-gray-300">
+                  {oportunidad.causaPrincipal.tipo}
+                </span>
+                <Badge variant="light" color="light" size="sm">
+                  {oportunidad.causaPrincipal.correlacion}% correlación
+                </Badge>
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                <span className="font-medium">Desvío:</span> {oportunidad.causaPrincipal.desvio} ·{" "}
+                {oportunidad.causaPrincipal.detalle}
+              </p>
+            </div>
+
+            {/* Link */}
+            <button
+              onClick={() => setShowAnalisisCausas(true)}
+              className="text-sm font-medium text-brand-500 hover:text-brand-600 dark:text-brand-400 dark:hover:text-brand-300 mb-4 inline-block text-left"
+            >
+              Ver análisis completo &gt;
+            </button>
+
+            {/* Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={() => setSelectedOportunidad(oportunidad)}
+            >
+              Ver detalles
+            </Button>
+          </div>
+        ))}
       </div>
     </div>
   );
