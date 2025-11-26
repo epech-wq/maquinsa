@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import Button from "@/components/ui/button/Button";
+import DatePicker from "@/components/ui/datepicker/DatePicker";
 import { CloseIcon, BoltIcon, InfoIcon, CheckCircleIcon } from "@/icons";
 
 interface CoDisenoModalProps {
@@ -155,11 +156,11 @@ const CoDisenoModal: React.FC<CoDisenoModalProps> = ({ isOpen, onClose }) => {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Fecha límite (Opcional)
               </label>
-              <input
-                type="date"
+              <DatePicker
                 value={fechaLimite}
-                onChange={(e) => setFechaLimite(e.target.value)}
-                className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none"
+                onChange={setFechaLimite}
+                placeholder="Seleccionar fecha"
+                minDate={new Date()}
               />
             </div>
           </div>
