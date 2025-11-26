@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { DollarLineIcon, BoxIconLine, AlertIcon } from "@/icons";
+import { AlertIcon } from "@/icons";
 import Badge from "@/components/ui/badge/Badge";
 import Button from "@/components/ui/button/Button";
 import AnalisisCausasContent from "./AnalisisCausasContent";
@@ -27,7 +27,6 @@ interface OportunidadCard {
 }
 
 const OportunidadesContent: React.FC = () => {
-  const [selectedOportunidad, setSelectedOportunidad] = useState<OportunidadCard | null>(null);
   const [showAnalisisCausas, setShowAnalisisCausas] = useState(false);
 
   // Mock data - replace with real data
@@ -211,7 +210,10 @@ const OportunidadesContent: React.FC = () => {
               variant="outline"
               size="sm"
               className="w-full"
-              onClick={() => setSelectedOportunidad(oportunidad)}
+              onClick={() => {
+                // TODO: Implement modal for opportunity details
+                console.log("Ver detalles:", oportunidad);
+              }}
             >
               Ver detalles
             </Button>

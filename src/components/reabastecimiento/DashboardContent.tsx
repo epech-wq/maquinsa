@@ -144,7 +144,7 @@ const DashboardContent: React.FC = () => {
       newState.marca = navigationState.marca;
       newState.sku = value;
     } else if (level === "segmentacion") {
-      newState.segmentacion = value as any;
+      newState.segmentacion = value as "Hot" | "Balanceadas" | "Slow" | "Críticas" | undefined;
     }
     
     // Preserve other axes

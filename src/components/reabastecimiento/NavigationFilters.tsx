@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import Select from "../form/Select";
 import { DownloadIcon } from "@/icons";
 
@@ -264,7 +264,7 @@ const NavigationFilters: React.FC<NavigationFiltersProps> = ({
             <Select
               options={segmentaciones}
               placeholder="Segmentación"
-              onChange={(value) => updateState("segmentacion", value as any)}
+              onChange={(value) => updateState("segmentacion", value as "Hot" | "Balanceadas" | "Slow" | "Críticas")}
               defaultValue={navigationState.segmentacion || ""}
               className="text-xs"
             />
