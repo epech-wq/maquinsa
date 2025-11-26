@@ -8,8 +8,6 @@ import {
   CalenderIcon,
   DollarLineIcon,
   PieChartIcon,
-  ArrowUpIcon,
-  ArrowDownIcon,
 } from "@/icons";
 import NavigationFilters, { NavigationState, TimePeriod } from "./NavigationFilters";
 import NavigationBreadcrumb, { BreadcrumbItem } from "./NavigationBreadcrumb";
@@ -318,35 +316,6 @@ const DashboardContent: React.FC = () => {
     };
   };
 
-  // Calculate period variation
-  const calculatePeriodVariation = (current: number, previous: number) => {
-    if (previous === 0) return { value: "0", trend: "neutral", percentage: 0 };
-    const variation = ((current - previous) / previous) * 100;
-    return {
-      value: Math.abs(variation).toFixed(1),
-      trend: variation > 0 ? "up" : variation < 0 ? "down" : "neutral",
-      percentage: variation,
-    };
-  };
-
-  // Calculate projection to period end
-  const calculateProjection = (current: number, previous: number, daysElapsed: number, totalDays: number) => {
-    if (daysElapsed === 0) return current;
-    const dailyRate = current / daysElapsed;
-    const projection = dailyRate * totalDays;
-    return Math.round(projection);
-  };
-
-  // Get current day of month/period for projection
-  const getDaysInfo = () => {
-    const now = new Date();
-    const dayOfMonth = now.getDate();
-    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-    return { elapsed: dayOfMonth, total: daysInMonth };
-  };
-
-  const daysInfo = getDaysInfo();
-
   return (
     <div className="space-y-6">
       {/* Navigation Filters */}
@@ -376,105 +345,57 @@ const DashboardContent: React.FC = () => {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {parameters.map((param) => {
             const deviation = calculateDeviationFromTarget(param.optimized, param.actual);
-            const variation = calculatePeriodVariation(param.actual, param.previousPeriod);
-            const projection = calculateProjection(
-              param.actual,
-              param.previousPeriod,
-              daysInfo.elapsed,
-              daysInfo.total
-            );
 
             return (
               <div
                 key={param.id}
-                className={`rounded-2xl border p-5 dark:bg-white/[0.03] transition-all ${
-                  deviation.color === "error"
-                    ? "border-error-200 bg-error-50/50 dark:border-error-800 dark:bg-error-500/10"
-                    : deviation.color === "warning"
-                    ? "border-warning-200 bg-warning-50/50 dark:border-warning-800 dark:bg-warning-500/10"
-                    : "border-gray-200 bg-white dark:border-gray-800"
-                }`}
+                className="rounded-2xl border p-5 bg-white dark:bg-white/[0.03] border-gray-200 dark:border-gray-800 transition-all"
               >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="flex items-center justify-center min-w-[2.5rem] min-h-[2.5rem] w-10 h-10 bg-gray-100 rounded-lg dark:bg-gray-800 flex-shrink-0">
-                    <div className="text-gray-700 dark:text-gray-300">
-                      {param.icon}
+                {/* Header with icon, title and badge */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center min-w-[2.5rem] min-h-[2.5rem] w-10 h-10 bg-gray-100 rounded-lg dark:bg-gray-800 flex-shrink-0">
+                      <div className="text-gray-700 dark:text-gray-300">
+                        {param.icon}
+                      </div>
                     </div>
+                    <h3 className="text-sm font-medium text-gray-800 dark:text-white/90">
+                      {param.title}
+                    </h3>
                   </div>
-                  <h3 className="text-sm font-medium text-gray-800 dark:text-white/90 truncate min-w-0">
-                    {param.title}
-                  </h3>
+                  <Badge color={deviation.color} size="sm">
+                    {deviation.isPositive ? "+" : "-"}
+                    {deviation.value}%
+                  </Badge>
                 </div>
 
-                <div className="space-y-3">
+                {/* Two columns for Optimized and Actual */}
+                <div className="grid grid-cols-2 gap-4">
                   {/* Optimized Value */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                  <div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
                       Objetivo (Vemio)
-                    </span>
-                    <span className="text-base font-semibold text-brand-600 dark:text-brand-400">
-                      {param.optimized} {param.unit}
-                    </span>
+                    </p>
+                    <p className="text-xl font-semibold text-brand-600 dark:text-brand-400">
+                      {param.optimized}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      {param.unit}
+                    </p>
                   </div>
 
                   {/* Actual Value */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      Actual
-                    </span>
-                    <span className="text-base font-semibold text-gray-800 dark:text-white/90">
-                      {param.actual} {param.unit}
-                    </span>
+                  <div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                      Real
+                    </p>
+                    <p className="text-xl font-semibold text-gray-800 dark:text-white/90">
+                      {param.actual}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      {param.unit}
+                    </p>
                   </div>
-
-                  {/* Deviation from Target with Color Coding */}
-                  <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      vs. Objetivo
-                    </span>
-                    <Badge color={deviation.color} size="sm">
-                      {deviation.isPositive ? "+" : "-"}
-                      {deviation.value}%
-                    </Badge>
-                  </div>
-
-                  {/* Period Variation */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      vs. Período Anterior
-                    </span>
-                    <div className="flex items-center gap-1">
-                      {variation.trend === "up" && (
-                        <ArrowUpIcon className="w-3 h-3 text-success-500" />
-                      )}
-                      {variation.trend === "down" && (
-                        <ArrowDownIcon className="w-3 h-3 text-error-500" />
-                      )}
-                      <span
-                        className={`text-xs font-medium ${
-                          variation.trend === "up"
-                            ? "text-success-600 dark:text-success-400"
-                            : variation.trend === "down"
-                            ? "text-error-600 dark:text-error-400"
-                            : "text-gray-500 dark:text-gray-400"
-                        }`}
-                      >
-                        {variation.value}%
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Projection */}
-                  {timePeriod === "mes" && (
-                    <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        Proyección al cierre
-                      </span>
-                      <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                        ~{projection} {param.unit}
-                      </span>
-                    </div>
-                  )}
                 </div>
               </div>
             );
@@ -489,14 +410,13 @@ const DashboardContent: React.FC = () => {
         </h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-5">
           {kpis.map((kpi) => {
-            const deviation = calculateDeviationFromTarget(kpi.target, kpi.value);
-            const variation = calculatePeriodVariation(kpi.value, kpi.previousPeriod);
-            const projection = calculateProjection(
-              kpi.value,
-              kpi.previousPeriod,
-              daysInfo.elapsed,
-              daysInfo.total
-            );
+            // Calculate variation vs previous period
+            const variation = ((kpi.value - kpi.previousPeriod) / kpi.previousPeriod) * 100;
+            const variationColor: "success" | "error" | "default" = 
+              variation > 0 ? "success" : variation < 0 ? "error" : "default";
+
+            // Calculate 90-day projection (simple linear projection)
+            const projection = kpi.value * 3; // Assuming monthly data, 90d = 3 months
 
             const formatValue = (val: number) => {
               if (kpi.unit === "$") {
@@ -511,74 +431,51 @@ const DashboardContent: React.FC = () => {
             return (
               <div
                 key={kpi.id}
-                className={`rounded-2xl border p-6 dark:bg-white/[0.03] transition-all ${
-                  deviation.color === "error"
-                    ? "border-error-200 bg-error-50/50 dark:border-error-800 dark:bg-error-500/10"
-                    : deviation.color === "warning"
-                    ? "border-warning-200 bg-warning-50/50 dark:border-warning-800 dark:bg-warning-500/10"
-                    : "border-gray-200 bg-white dark:border-gray-800"
-                }`}
+                className="rounded-2xl border p-5 bg-white dark:bg-white/[0.03] border-gray-200 dark:border-gray-800 transition-all"
               >
-                <div className="flex items-center justify-center min-w-[3.5rem] min-h-[3.5rem] w-14 h-14 bg-gray-100 rounded-xl dark:bg-gray-800 mb-5 flex-shrink-0">
-                  <div className="text-gray-700 dark:text-gray-300">
-                    {kpi.icon}
+                {/* Header with icon, title and variation badge */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center min-w-[2.5rem] min-h-[2.5rem] w-10 h-10 bg-gray-100 rounded-lg dark:bg-gray-800 flex-shrink-0">
+                      <div className="text-gray-700 dark:text-gray-300">
+                        {kpi.icon}
+                      </div>
+                    </div>
+                    <h3 className="text-sm font-medium text-gray-800 dark:text-white/90">
+                      {kpi.title}
+                    </h3>
                   </div>
-                </div>
-                <p className="text-base text-gray-500 dark:text-gray-400 mb-3">
-                  {kpi.title}
-                </p>
-                <h4 className="text-2xl font-bold text-gray-800 dark:text-white/90 mb-3">
-                  {formatValue(kpi.value)}
-                </h4>
-
-                {/* Target Comparison */}
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    Objetivo
-                  </span>
-                  <Badge color={deviation.color} size="sm">
-                    {deviation.isPositive ? "+" : "-"}
-                    {deviation.value}%
+                  <Badge color={variationColor} size="sm">
+                    {variation > 0 ? "+" : ""}{variation.toFixed(1)}%
                   </Badge>
                 </div>
 
-                {/* Period Variation */}
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    vs. Anterior
-                  </span>
-                  <div className="flex items-center gap-1">
-                    {variation.trend === "up" && (
-                      <ArrowUpIcon className="w-3 h-3 text-success-500" />
-                    )}
-                    {variation.trend === "down" && (
-                      <ArrowDownIcon className="w-3 h-3 text-error-500" />
-                    )}
-                    <span
-                      className={`text-xs font-medium ${
-                        variation.trend === "up"
-                          ? "text-success-600 dark:text-success-400"
-                          : variation.trend === "down"
-                          ? "text-error-600 dark:text-error-400"
-                          : "text-gray-500 dark:text-gray-400"
-                      }`}
-                    >
-                      {variation.value}%
-                    </span>
-                  </div>
+                {/* Main KPI Value */}
+                <div className="mb-4">
+                  <p className="text-3xl font-bold text-gray-800 dark:text-white/90">
+                    {formatValue(kpi.value)}
+                  </p>
                 </div>
 
-                {/* Projection */}
-                {timePeriod === "mes" && (
-                  <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      Proyección
-                    </span>
-                    <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                      ~{formatValue(projection)}
-                    </span>
-                  </div>
-                )}
+                {/* Previous Period */}
+                <div className="mb-3 pb-3 border-b border-gray-200 dark:border-gray-700">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                    Período Anterior
+                  </p>
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {formatValue(kpi.previousPeriod)}
+                  </p>
+                </div>
+
+                {/* 90-day Projection */}
+                <div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                    Proyección 90d
+                  </p>
+                  <p className="text-sm font-semibold text-brand-600 dark:text-brand-400">
+                    {formatValue(projection)}
+                  </p>
+                </div>
               </div>
             );
           })}
