@@ -136,16 +136,6 @@ const NavigationFilters: React.FC<NavigationFiltersProps> = ({
     { value: "año", label: "Año Actual" },
   ];
 
-  // Get current day of month for display
-  const getDaysInfo = () => {
-    const now = new Date();
-    const dayOfMonth = now.getDate();
-    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-    return { elapsed: dayOfMonth, total: daysInMonth };
-  };
-
-  const daysInfo = getDaysInfo();
-
   return (
     <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-4">
       <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
@@ -155,20 +145,13 @@ const NavigationFilters: React.FC<NavigationFiltersProps> = ({
             <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
               Período
             </label>
-            <div className="flex items-center gap-2">
-              <Select
-                options={timePeriodOptions}
-                placeholder="Seleccionar período"
-                onChange={(value) => onTimePeriodChange(value as TimePeriod)}
-                defaultValue={timePeriod}
-                className="text-xs"
-              />
-              {timePeriod === "mes" && (
-                <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                  Día {daysInfo.elapsed}/{daysInfo.total}
-                </span>
-              )}
-            </div>
+            <Select
+              options={timePeriodOptions}
+              placeholder="Seleccionar período"
+              onChange={(value) => onTimePeriodChange(value as TimePeriod)}
+              defaultValue={timePeriod}
+              className="text-xs"
+            />
           </div>
           {/* Eje Cliente */}
           <div className="flex flex-col gap-2 min-w-[150px]">
