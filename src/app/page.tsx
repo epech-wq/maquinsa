@@ -1,7 +1,9 @@
 import React from "react";
-import ReabastecimientoLayout from "@/components/reabastecimiento/ReabastecimientoLayout";
-import DashboardContent from "@/components/reabastecimiento/DashboardContent";
-import OportunidadesContent from "@/components/reabastecimiento/OportunidadesContent";
+import {
+  ReabastecimientoLayout,
+  DashboardContent,
+  OportunidadesContent,
+} from "@/components/vemio-dashboard";
 
 export default function HomePage() {
   return (
